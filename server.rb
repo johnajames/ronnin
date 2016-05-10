@@ -1,9 +1,10 @@
 require 'sinatra'
 require 'json'
-require 'byebug'
+require 'pry'
 
 post '/payload' do
+  binding.pry
   push = JSON.parse(request.body.read)
-  byebug
   puts "I got some JSON: #{push.inspect}"
+
 end
