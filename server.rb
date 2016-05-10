@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'json'
+require 'byebug'
 
 post '/payload' do
   push = JSON.parse(request.body.read)
