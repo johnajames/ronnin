@@ -13,6 +13,7 @@ class Ronin
   end
 
   def send_message
+    # use mail to send a message
   end
 
   def run_test
