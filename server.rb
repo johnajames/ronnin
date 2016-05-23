@@ -22,6 +22,7 @@ require 'mail'
 post '/payload' do
   push = JSON.parse(request.body.read)
   # lets gather the data we want and store them in variables
+  
   pusher = push["pusher"]["name"]
   branch = push["ref"]
 
