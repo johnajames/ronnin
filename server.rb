@@ -5,38 +5,50 @@ require 'ronin'
 require 'mail'
 
 # CI Steps
-# before code is pushed individual runs code
-# q's should there be a stage branch how closeley does test reflect master at the moment
-# A push to push to stage branch is made
-# script runs the test on the development or person local machine
-
 # This is the workflow it's going for
-# run test locally and don't push to stage unless passes
+# push to master only if all tests for your project are passing
 # don't create a pull-request unlss you have a passing test
-# and push to stage
 # no need to check for passed tests on master after this
 # production needs to be able to ask current version matches current master
 # if if passes tests then pull update into production
 # prevents coming into office to deploy a fixed production
 
+# In order to facilitate the requirements of the project we are going to
+# begin using a tagging facilities in git to help our lean ci tool know what new
+# code being pushed
+# is ready to be merged and pulled into production
+# after the aforementioned steps are complete the user updated the tag and
+# executed the git commands
+
 post '/payload' do
+  current_tag = `git tag`
   push = JSON.parse(request.body.read)
   # lets gather the data we want and store them in variables
-  
+    # every event is monitored so all you have to do is change the tag
   pusher = push["pusher"]["name"]
-  branch = push["ref"]
-
-  # get a list of all the files touched
-  files = push["commits"].map do |commit|
-    commit['added'] + commit['modified'] + commit['removed']
-  end
-  files.flatten.uniq
-
-
-
+  new_tag = push["tag_name"]
 
   # check our criteria
-  if branch == 'stage' or branch == 'master'
+  if current_tag != new_tag
+    # move into directory of the project
+    begin
+      Dir.chidir("io") do
+        process_id = `lsof -wni tcp:8000`
+        `kill -9 process_id`
+        `git pull origin master`
+        `echo username`
+        `yes`
+        `echo password`
+        `yes`
+        `/manage collectstatic`
+        `./manage migrate`
+        `uwsgi_python27 --reload io.pid`
+      end
+    rescue
+      puts "could not access directory"
+    end
+  end
+
     Mail.deliver do
       # a daemon e-mail account
       from 'test@wm.com'
@@ -44,6 +56,5 @@ post '/payload' do
       subject "updated are currently staged and ready to be tested"
       body "The following have been modified #{files}"
     end
-  end
   puts "I got some JSON: #{push.inspect}"
 end
