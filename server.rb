@@ -2,6 +2,11 @@ require 'sinatra'
 require 'json'
 require 'mail'
 
+post '/payload' do
+  push = JSON.parse(request.body.read)
+  puts "I got some JSON: #{push.inspect}"
+end
+
 # CI Steps
 # This is the workflow it's going for
 # push to master only if all tests for your project are passing
@@ -18,7 +23,7 @@ require 'mail'
 # after the aforementioned steps are complete the user updated the tag and
 # executed the git commands
 
-post '/payload' do
+# post '/payload' do
   # current_tag = `git tag`
   # push = JSON.parse(request.body.read)
   # # lets gather the data we want and store them in variables
@@ -54,5 +59,5 @@ post '/payload' do
     #   subject "updated are currently staged and ready to be tested"
     #   body "The following have been modified #{files}"
     # end
-    puts "I got some JSON: #{push.inspect}"
-end
+    # puts "I got some JSON: #{push.inspect}"
+# end
