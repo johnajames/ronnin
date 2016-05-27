@@ -2,26 +2,22 @@ require 'sinatra'
 require 'json'
 require 'mail'
 
-username, password = ARGV
-
 post '/payload' do
-
-
   push = JSON.parse(request.body.read) # parse the JSON
 
-  repo_name = push['reposity']['full_name']
+  tags_list = `git tag`.split("\n")
+  current_tag = tags_list.last.to_f
+  tag_name = push['tag_name'].to_f
 
-  pusher = push["pusher"]["name"]
-  branch = push["ref"]
-  tag_name = push['tag_name']
-
-  begin
-    Dir.chidir('greenzone') do
+  if tag_name > current_tag
+    Dir.chidir('io') do
+      # requires ssh
       `git pull origin master`
-      puts username
-      puts password
+      `./manage collectstatic`
+      `./manage migate`
+      `uwsgi_python27 --reload io.pid`
     end
-  rescue
+
   end
 
   Mail.deliver do
@@ -31,5 +27,3 @@ post '/payload' do
     body     "ALARM"
   end
 end
-
-if __FILE__ == $server.rb
